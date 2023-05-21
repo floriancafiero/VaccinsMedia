@@ -1,0 +1,95 @@
+---
+title: "Wordclouds_vax"
+output: html_document
+date: '2023-05-21'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+# Load packages
+
+```{r loading packages}
+library(readr)
+library(wordcloud)
+library(tm)
+```
+# Specify the path of your file
+
+```{r loading tables}
+top_words_13_14_global <- read.csv("~/Desktop/Thèse/Media/Wordclouds_new/top_words_13_14_global.csv", sep=";")
+top_words_14_15_global <- read.csv("~/Desktop/Thèse/Media/Wordclouds_new/top_words_14_15_global.csv", sep=";")
+top_words_15_16_global <- read.csv("~/Desktop/Thèse/Media/Wordclouds_new/top_words_15_16_global.csv", sep=";")
+top_words_16_17_global <- read.csv("~/Desktop/Thèse/Media/Wordclouds_new/top_words_16_17_global.csv", sep=";")
+top_words_17_18_global <- read.csv("~/Desktop/Thèse/Media/Wordclouds_new/top_words_17_18_global.csv", sep=";")
+top_words_18_19_global <- read.csv("~/Desktop/Thèse/Media/Wordclouds_new/top_words_18_19_global.csv", sep=";")
+top_words_19_global <- read.csv("~/Desktop/Thèse/Media/Wordclouds_new/top_words_19_global.csv", sep=";")
+```
+
+
+# Create word cloud
+
+## 2013 - 2014
+
+```{r wordclouds}
+wordcloud(words = top_words_13_14_global$term, freq = top_words_13_14_global$count, min.freq = 5,
+          max.words=2000, random.order=FALSE, rot.per=0.35, scale=c(3, 0.5),
+          colors=brewer.pal(8, "Dark2"))
+```
+
+## 2014 - 2015
+
+```{r wordclouds}
+wordcloud1415 <- wordcloud(words = top_words_14_15_global$term, freq = top_words_14_15_global$count, min.freq = 5,
+          max.words=2000, random.order=FALSE, rot.per=0.35, scale=c(3, 0.5),
+          colors=brewer.pal(8, "Dark2"))
+```
+
+## 2015 - 2016
+
+```{r wordclouds}
+wordcloud1516 <- wordcloud(words = top_words_15_16_global$term, freq = top_words_15_16_global$count, min.freq = 5,
+          max.words=2000, random.order=FALSE, rot.per=0.35, scale=c(3, 0.5),
+          colors=brewer.pal(8, "Dark2"))
+```
+
+## 2016 - 2017
+
+```{r wordclouds}
+wordcloud1617 <- wordcloud(words = top_words_16_17_global$term, freq = top_words_16_17_global$count, min.freq = 5,
+          max.words=2000, random.order=FALSE, rot.per=0.35, scale=c(3, 0.5),
+          colors=brewer.pal(8, "Dark2"))
+```
+
+## 2017 -2018
+
+```{r wordclouds}
+wordcloud1718 <- wordcloud(words = top_words_17_18_global$term, freq = top_words_17_18_global$count, min.freq = 5,
+          max.words=2000, random.order=FALSE, rot.per=0.35, scale=c(3, 0.5),
+          colors=brewer.pal(8, "Dark2"))
+```
+
+## 2018 -2019
+
+```{r wordclouds}
+wordcloud1819 <- wordcloud(words = top_words_18_19_global$term, freq = top_words_18_19_global$count, min.freq = 5,
+          max.words=2000, random.order=FALSE, rot.per=0.35, scale=c(3, 0.5),
+          colors=brewer.pal(8, "Dark2"))
+```
+
+## 2019
+
+```{r wordclouds}
+wordcloud19 <- wordcloud(words = top_words_19_global$term, freq = top_words_19_global$count, min.freq = 5,
+          max.words=2000, random.order=FALSE, rot.per=0.35, scale=c(3, 0.5),
+          colors=brewer.pal(8, "Dark2"))
+```
+
+
