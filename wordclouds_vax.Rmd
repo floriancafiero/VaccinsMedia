@@ -33,12 +33,11 @@ top_words_18_19_global <- read.csv("~/Desktop/Thèse/Media/Wordclouds_new/top_w
 top_words_19_global <- read.csv("~/Desktop/Thèse/Media/Wordclouds_new/top_words_19_global.csv", sep=";")
 ```
 
-
-# Create word cloud
+# Word cloud: France - national
 
 ## 2013 - 2014
 
-```{r wordclouds}
+```{r wordclouds 2013 - 2014}
 wordcloud(words = top_words_13_14_global$term, freq = top_words_13_14_global$count, min.freq = 5,
           max.words=2000, random.order=FALSE, rot.per=0.35, scale=c(3, 0.5),
           colors=brewer.pal(8, "Dark2"))
@@ -46,7 +45,7 @@ wordcloud(words = top_words_13_14_global$term, freq = top_words_13_14_global$cou
 
 ## 2014 - 2015
 
-```{r wordclouds}
+```{r wordclouds 2014 - 2015}
 wordcloud1415 <- wordcloud(words = top_words_14_15_global$term, freq = top_words_14_15_global$count, min.freq = 5,
           max.words=2000, random.order=FALSE, rot.per=0.35, scale=c(3, 0.5),
           colors=brewer.pal(8, "Dark2"))
@@ -54,7 +53,7 @@ wordcloud1415 <- wordcloud(words = top_words_14_15_global$term, freq = top_words
 
 ## 2015 - 2016
 
-```{r wordclouds}
+```{r wordclouds 2015 - 2016}
 wordcloud1516 <- wordcloud(words = top_words_15_16_global$term, freq = top_words_15_16_global$count, min.freq = 5,
           max.words=2000, random.order=FALSE, rot.per=0.35, scale=c(3, 0.5),
           colors=brewer.pal(8, "Dark2"))
@@ -62,7 +61,7 @@ wordcloud1516 <- wordcloud(words = top_words_15_16_global$term, freq = top_words
 
 ## 2016 - 2017
 
-```{r wordclouds}
+```{r wordclouds 2016 - 2017}
 wordcloud1617 <- wordcloud(words = top_words_16_17_global$term, freq = top_words_16_17_global$count, min.freq = 5,
           max.words=2000, random.order=FALSE, rot.per=0.35, scale=c(3, 0.5),
           colors=brewer.pal(8, "Dark2"))
@@ -70,7 +69,7 @@ wordcloud1617 <- wordcloud(words = top_words_16_17_global$term, freq = top_words
 
 ## 2017 -2018
 
-```{r wordclouds}
+```{r wordclouds 2017 - 2018}
 wordcloud1718 <- wordcloud(words = top_words_17_18_global$term, freq = top_words_17_18_global$count, min.freq = 5,
           max.words=2000, random.order=FALSE, rot.per=0.35, scale=c(3, 0.5),
           colors=brewer.pal(8, "Dark2"))
@@ -78,7 +77,7 @@ wordcloud1718 <- wordcloud(words = top_words_17_18_global$term, freq = top_words
 
 ## 2018 -2019
 
-```{r wordclouds}
+```{r wordclouds 2018 - 2019}
 wordcloud1819 <- wordcloud(words = top_words_18_19_global$term, freq = top_words_18_19_global$count, min.freq = 5,
           max.words=2000, random.order=FALSE, rot.per=0.35, scale=c(3, 0.5),
           colors=brewer.pal(8, "Dark2"))
@@ -86,10 +85,38 @@ wordcloud1819 <- wordcloud(words = top_words_18_19_global$term, freq = top_words
 
 ## 2019
 
-```{r wordclouds}
+```{r wordclouds 2019}
 wordcloud19 <- wordcloud(words = top_words_19_global$term, freq = top_words_19_global$count, min.freq = 5,
           max.words=2000, random.order=FALSE, rot.per=0.35, scale=c(3, 0.5),
           colors=brewer.pal(8, "Dark2"))
+```
+
+
+# Statistiques et spécificités
+
+## Restructuration pour introduire la dimension temporelle
+
+On ajoute une colonne 'year' à chaque data frame.
+
+```{r adding year and merging}
+
+top_words_13_14_global$year <- "2013-2014"
+top_words_14_15_global$year <- "2014-2015"
+top_words_15_16_global$year <- "2015-2016"
+top_words_16_17_global$year <- "2016-2017"
+top_words_17_18_global$year <- "2017-2018"
+top_words_18_19_global$year <- "2018-2019"
+top_words_19_global$year <- "2019"
+top_words_by_year <- rbind(top_words_13_14_global, top_words_14_15_global, top_words_15_16_global, 
+            top_words_16_17_global, top_words_17_18_global, top_words_18_19_global, 
+            top_words_19_global)
+```
+
+## Stats descs par année
+
+```{r moyenne et écart type}
+means <- aggregate(count ~ term, data = top_words_by_year, FUN = mean)
+std_devs <- aggregate(count ~ term, data = top_words_by_year, FUN = sd)
 ```
 
 
