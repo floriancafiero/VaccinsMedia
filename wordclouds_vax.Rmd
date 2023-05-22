@@ -8,20 +8,16 @@ date: '2023-05-21'
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-# Load packages
+# Chargement des packages et des fichiers
 
 ```{r loading packages}
 library(readr)
 library(wordcloud)
 library(tm)
+library(pheatmap)
+library(tidyverse)
 ```
-# Specify the path of your file
+On spécifie le chemin des fichiers:
 
 ```{r loading tables}
 top_words_13_14_global <- read.csv("~/Desktop/Thèse/Media/Wordclouds_new/top_words_13_14_global.csv", sep=";")
@@ -99,7 +95,6 @@ wordcloud19 <- wordcloud(words = top_words_19_global$term, freq = top_words_19_g
 On ajoute une colonne 'year' à chaque data frame.
 
 ```{r adding year and merging}
-
 top_words_13_14_global$year <- "2013-2014"
 top_words_14_15_global$year <- "2014-2015"
 top_words_15_16_global$year <- "2015-2016"
@@ -110,13 +105,219 @@ top_words_19_global$year <- "2019"
 top_words_by_year <- rbind(top_words_13_14_global, top_words_14_15_global, top_words_15_16_global, 
             top_words_16_17_global, top_words_17_18_global, top_words_18_19_global, 
             top_words_19_global)
+top_words_by_year
 ```
 
-## Stats descs par année
+## Stats descs et z-score par année
+
+On filtre les termes n'apparaissant qu'une seule année:
+
+```{r filtre}
+counts <- aggregate(count ~ term, data = top_words_by_year, FUN = length)
+top_words_by_year <- top_words_by_year[top_words_by_year$term %in% counts$term[counts$count > 1], ]
+```
+
+On calcule moyennes et écart-types:
 
 ```{r moyenne et écart type}
 means <- aggregate(count ~ term, data = top_words_by_year, FUN = mean)
+names(means)[names(means) == "count"] <- "mean"
 std_devs <- aggregate(count ~ term, data = top_words_by_year, FUN = sd)
+names(std_devs)[names(std_devs) == "count"] <- "sd"
+top_words_by_year
+```
+
+On rajoute ces valeurs à la base de donnée globale:
+
+```{r fusionner}
+top_words_by_year <- merge(top_words_by_year, means, by = "term")
+top_words_by_year <- merge(top_words_by_year, std_devs, by = "term")
+top_words_by_year
+```
+
+On calcule les z-score, en excluant les cas où l'écart-type est nul.
+
+```{r z-score }
+top_words_by_year <- top_words_by_year %>%
+  group_by(term) %>%
+  mutate(mean = mean(count), 
+         sd = sd(count)) %>%
+  filter(sd != 0) %>%
+  ungroup() %>%
+  mutate(z_score = (count - mean) / sd)
+top_words_by_year
+```
+
+# Get the top 10 words with highest and lowest z-scores
+
+```{r top high z-score }
+library(dplyr)
+top_30_positive <- top_words_by_year %>% arrange(desc(z_score)) %>% head(30)
+top_30_negative <- top_words_by_year %>% arrange(z_score) %>% head(30)
+print(top_30_positive)
+print(top_30_negative)
+write.csv(top_30_positive, "top_30_positive_z_scores.csv", row.names = FALSE)
+write.csv(top_30_negative, "top_30_negative_z_scores.csv", row.names = FALSE)
+```
+
+
+## Heatmap
+
+### Liste de mots sélectionnés: maladies, vaccins, adjuvants, laboratoire
+
+gardasil, sanofi, gsk,
+
+```{r sélection des termes }
+selected_terms <- c("gardasil", "utérus", "grippe", "hpv", "papillomavirus", "grippe", "h1n1", "tuberculose", "aluminium", "autisme", "polio", "sanofi", "gsk" )
+```
+
+On filtre ensuite pour ne garder que ces termes
+
+```{r sélection des termes: filtrage}
+df_selected <- top_words_by_year %>% 
+  filter(term %in% selected_terms)
+```
+
+# Create a matrix for the heatmap
+```{r heatmap}
+library(pheatmap)
+heatmap_matrix <- df_selected %>%
+  spread(key = year, value = count)  # Convert the data to wide format
+heatmap_matrix <- as.matrix(heatmap_matrix[,-1])  # Convert the data frame to a matrix
+print(heatmap_matrix)
+```
+
+# Create the heatmap
+```{r heatmap: création}
+pheatmap::pheatmap(heatmap_matrix)
+```
+
+# Série temporelle
+
+Graphiques pour séries temporelles de la presse nationale et de la presse locale française:
+
+## En valeurs absolues
+
+```{r time series}
+library(tidyverse)
+library(lubridate)
+library(ggplot2)
+data <- read.csv("~/Desktop/Thèse/Media/total_france_national_decompte.csv")
+data2 <- read.csv("~/Desktop/Thèse/Media/total_france_local_decompte.csv")
+data$date <- as.Date(data$date)
+data <- data %>%
+  mutate(year_month = floor_date(date, "month"))
+data_monthly <- data %>%
+  group_by(year_month) %>%
+  summarize(
+    count = sum(count),
+    total_count = sum(total_count),
+    ratio = mean(ratio)
+  )
+
+# Convert "date" column to a date type:
+data2$date <- as.Date(data2$date)
+# Add a new column for the month and year:
+data2 <- data2 %>%
+  mutate(year_month = floor_date(date, "month"))
+# Group by this new column and summarize:
+data2_monthly <- data2 %>%
+  group_by(year_month) %>%
+  summarize(
+    count = sum(count),
+    total_count = sum(total_count),
+    ratio = mean(ratio)
+  )
+# Add a source column to each data frame:
+data_monthly$source <- "data1"
+data2_monthly$source <- "data2"
+
+# Combine both data frames:
+combined_data <- rbind(data_monthly, data2_monthly)
+
+
+# Plot the data:
+ggplot(combined_data, aes(x = year_month, y = count, color = source)) +
+  geom_line() +
+  theme_minimal() +
+  scale_x_date(date_minor_breaks = "1 month", 
+               date_breaks = "1 year", 
+               date_labels = "%Y") +
+  xlab("Année") +
+  ylab("Nombre d'articles") +
+  ggtitle("Nombres d'articles par mois - thème: vaccination") +
+  scale_color_discrete(labels = c("Presse nationale", "Presse régionale")) +
+  theme(
+    panel.grid.major = element_line(color = "grey", linetype = "solid", size = 0.5), 
+    panel.grid.minor = element_line(color = "grey", linetype = "dotted", size = 0.5)
+  )
+```
+
+## En pourcentage de la production collectée
+
+```{r time series - ratio}
+ggplot(combined_data, aes(x = year_month, y = ratio, color = source)) +
+  geom_line() +
+  theme_minimal() +
+  scale_x_date(date_minor_breaks = "1 month", 
+               date_breaks = "1 year", 
+               date_labels = "%Y") +
+  xlab("Année") +
+  ylab("Part des publications évoquant la vaccination") +
+  ggtitle("Proportion d'articles par mois consacrés au thème de la vaccination") +
+  scale_color_discrete(labels = c("Presse nationale", "Presse régionale")) +
+  theme(
+    panel.grid.major = element_line(color = "grey", linetype = "solid", size = 0.5), 
+    panel.grid.minor = element_line(color = "grey", linetype = "dotted", size = 0.5)
+  )
+```
+
+## Corrélations
+
+```{r corrélation}
+combined_data <- full_join(
+  data_monthly %>% select(year_month, ratio) %>% rename(ratio1 = ratio),
+  data2_monthly %>% select(year_month, ratio) %>% rename(ratio2 = ratio),
+  by = "year_month"
+)
+cor(combined_data$ratio1, combined_data$ratio2, use = "complete.obs")
+```
+
+```{r corrélation roulante}
+library(zoo)
+# Create zoo objects for the rolling correlation:
+z1 <- zoo(combined_data$ratio1)
+z2 <- zoo(combined_data$ratio2)
+
+# Calculate the rolling correlation:
+rolling_cor <- rollapply(
+  cbind(z1, z2), 
+  width = 9,    # 9-month moving window
+  FUN = function(x) cor(x[,1], x[,2], use = "complete.obs"), 
+  by.column = FALSE, 
+  align = "right",
+  fill = NA
+)
+
+# Add the rolling correlation to the data frame:
+combined_data$rolling_cor <- as.vector(rolling_cor)
+
+# Plot the rolling correlation:
+ggplot(combined_data, aes(x = year_month, y = rolling_cor)) +
+  geom_line() +
+  geom_smooth(method = "loess", se = FALSE, color = "red", linetype = "dashed") +
+  theme_minimal() +
+  scale_x_date(date_minor_breaks = "1 month", 
+               date_breaks = "1 year", 
+               date_labels = "%Y") +
+  xlab("Année") +
+  ylab("Corrélation roulante") +
+  ggtitle("Corrélation roulante (9 mois) entre nombre d'articles presse régionale et locale") +
+  theme(
+    panel.grid.major = element_line(color = "grey", linetype = "solid", size = 0.5), 
+    panel.grid.minor = element_line(color = "grey", linetype = "dotted", size = 0.5)
+  )
+
 ```
 
 
