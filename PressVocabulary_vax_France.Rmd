@@ -14,7 +14,6 @@ knitr::opts_chunk$set(echo = TRUE)
 library(readr)
 library(wordcloud)
 library(tm)
-library(pheatmap)
 library(tidyverse)
 ```
 On spécifie le chemin des fichiers:
@@ -186,24 +185,24 @@ merged <- full_join(top_words_13_19_gauche, top_words_13_19_droite, by = "term",
 merged[is.na(merged)] <- 0
 
 # Comparaison gauche droite 2013 - 2019 - table
-GD_corpus1 = data.frame(top_words_13_19_gauche$term, top_words_13_19_gauche$count)
-GD_corpus2 = data.frame(top_words_13_19_droite$term, top_words_13_19_droite$count)
+GD_gauche = data.frame(top_words_13_19_gauche$term, top_words_13_19_gauche$count)
+GD_droite = data.frame(top_words_13_19_droite$term, top_words_13_19_droite$count)
 
-colnames(GD_corpus1) = c('word', 'freq_corpus1')
-colnames(GD_corpus2) = c('word', 'freq_corpus2')
+colnames(GD_gauche) = c('word', 'freq_gauche')
+colnames(GD_droite) = c('word', 'freq_droite')
 
 # Calculer le nombre total pour chaque corpus
-total_count_corpus1 = sum(GD_corpus1$freq_corpus1)
-total_count_corpus2 = sum(GD_corpus2$freq_corpus2)
+total_count_gauche = sum(GD_gauche$freq_gauche)
+total_count_droite = sum(GD_droite$freq_droite)
 
 # Fusionner les deux dataframes
-GD_corpus = merge(GD_corpus1, GD_corpus2, by = "word")
+GD_corpus = merge(GD_gauche, GD_droite, by = "word")
 
 # Calculer les fréquences attendues et observées pour chaque mot
-GD_corpus$expected_corpus1 = (GD_corpus$freq_corpus1 + GD_corpus$freq_corpus2) * (total_count_corpus1 / (total_count_corpus1 + total_count_corpus2))
-GD_corpus$expected_corpus2 = (GD_corpus$freq_corpus1 + GD_corpus$freq_corpus2) * (total_count_corpus2 / (total_count_corpus1 + total_count_corpus2))
-GD_corpus$observed_corpus1 = GD_corpus$freq_corpus1
-GD_corpus$observed_corpus2 = GD_corpus$freq_corpus2
+GD_corpus$expected_gauche = (GD_corpus$freq_gauche + GD_corpus$freq_droite) * (total_count_gauche / (total_count_gauche + total_count_droite))
+GD_corpus$expected_droite = (GD_corpus$freq_gauche + GD_corpus$freq_droite) * (total_count_droite / (total_count_gauche + total_count_droite))
+GD_corpus$observed_gauche = GD_corpus$freq_gauche
+GD_corpus$observed_droite = GD_corpus$freq_droite
 
 # Fonction personnalisée pour le calcul de la vraisemblance logarithmique
 log_likelihood <- function(O1, O2, E1, E2) {
@@ -212,7 +211,7 @@ log_likelihood <- function(O1, O2, E1, E2) {
 }
 
 # Appliquer la fonction à chaque ligne
-GD_corpus$log_likelihood <- mapply(log_likelihood, GD_corpus$observed_corpus1, GD_corpus$observed_corpus2, GD_corpus$expected_corpus1, GD_corpus$expected_corpus2)
+GD_corpus$log_likelihood <- mapply(log_likelihood, GD_corpus$observed_gauche, GD_corpus$observed_droite, GD_corpus$expected_gauche, GD_corpus$expected_droite)
 
 # Trier par log_likelihood
 GD_corpus = GD_corpus[order(-GD_corpus$log_likelihood), ]
@@ -222,7 +221,7 @@ head(GD_corpus)
 
 # Comparaison gauche droite 2013 - 2019 - visualisation
 library(ggplot2)
-GD_corpus$corpus <- ifelse(GD_corpus$freq_corpus1 > GD_corpus$freq_corpus2, "Corpus 1", "Corpus 2")
+GD_corpus$corpus <- ifelse(GD_corpus$freq_gauche > GD_corpus$freq_droite, "Gauche", "Droite")
 
 # Sélectionner les n mots avec les scores de vraisemblance logarithmique absolus les plus élevés
 n <- 30
@@ -232,8 +231,12 @@ GD_plot <- GD_corpus[order(abs(GD_corpus$log_likelihood), decreasing = TRUE), ][
 ggplot(GD_plot, aes(x = reorder(word, log_likelihood), y = log_likelihood, fill = corpus)) +
   geom_bar(stat = "identity") +
   coord_flip() +
-  labs(x = "Mot", y = "Score de vraisemblance logarithmique", fill = "Plus fréquent dans la:",
-       title = "Mots avec la plus grande différence d'usage")
+  labs(x = "Mot", y = "Score de vraisemblance logarithmique", fill = "Plus fréquent dans:",
+       title = "Mots avec la plus grande différence d'usage") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "Set1",
+                    labels = c("Presse de gauche", "Presse de droite"))
+
 
 ```
 
@@ -310,44 +313,13 @@ write.csv(top_30_negative, "top_30_negative_z_scores.csv", row.names = FALSE)
 ```
 
 
-## Heatmap
-
-### Liste de mots sélectionnés: maladies, vaccins, adjuvants, laboratoire
-
-gardasil, sanofi, gsk,
-
-```{r sélection des termes }
-selected_terms <- c("gardasil", "utérus", "grippe", "hpv", "papillomavirus", "grippe", "h1n1", "tuberculose", "aluminium", "autisme", "polio", "sanofi", "gsk" )
-```
-
-On filtre ensuite pour ne garder que ces termes
-
-```{r sélection des termes: filtrage}
-df_selected <- top_words_by_year %>% 
-  filter(term %in% selected_terms)
-```
-
-# Create a matrix for the heatmap
-```{r heatmap}
-library(pheatmap)
-heatmap_matrix <- df_selected %>%
-  spread(key = year, value = count)  # Convert the data to wide format
-heatmap_matrix <- as.matrix(heatmap_matrix[,-1])  # Convert the data frame to a matrix
-print(heatmap_matrix)
-```
-
-# Create the heatmap
-```{r heatmap: création}
-pheatmap::pheatmap(heatmap_matrix)
-```
-
 # Série temporelle : Presse nationale et presse locale
 
 Graphiques pour séries temporelles de la presse nationale et de la presse locale française:
 
 ## En valeurs absolues
 
-```{r time series}
+```{r time series national régional}
 library(tidyverse)
 library(lubridate)
 library(ggplot2)
@@ -404,7 +376,7 @@ ggplot(combined_data, aes(x = year_month, y = count, color = source)) +
 
 ## En pourcentage de la production collectée
 
-```{r time series - ratio}
+```{r time series - ratio national régional}
 ggplot(combined_data, aes(x = year_month, y = ratio, color = source)) +
   geom_line() +
   theme_minimal() +
@@ -423,7 +395,7 @@ ggplot(combined_data, aes(x = year_month, y = ratio, color = source)) +
 
 ## Corrélations
 
-```{r corrélation}
+```{r corrélation national régional}
 combined_data <- full_join(
   data_monthly %>% select(year_month, ratio) %>% rename(ratio1 = ratio),
   data2_monthly %>% select(year_month, ratio) %>% rename(ratio2 = ratio),
@@ -432,7 +404,7 @@ combined_data <- full_join(
 cor(combined_data$ratio1, combined_data$ratio2, use = "complete.obs")
 ```
 
-```{r corrélation roulante}
+```{r corrélation roulante national régional}
 library(zoo)
 # Create zoo objects for the rolling correlation:
 z1 <- zoo(combined_data$ratio1)
