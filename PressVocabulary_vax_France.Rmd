@@ -1,0 +1,606 @@
+---
+title: "Wordclouds_vax"
+output: html_document
+date: '2023-05-21'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Chargement des packages et des fichiers
+
+```{r loading packages}
+library(readr)
+library(wordcloud)
+library(tm)
+library(pheatmap)
+library(tidyverse)
+```
+On spécifie le chemin des fichiers:
+
+```{r loading tables}
+top_words_13_14_global <- read.csv("~/Desktop/Thèse/Media/Wordclouds_new/top_words_13_14_global.csv", sep=";")
+top_words_14_15_global <- read.csv("~/Desktop/Thèse/Media/Wordclouds_new/top_words_14_15_global.csv", sep=";")
+top_words_15_16_global <- read.csv("~/Desktop/Thèse/Media/Wordclouds_new/top_words_15_16_global.csv", sep=";")
+top_words_16_17_global <- read.csv("~/Desktop/Thèse/Media/Wordclouds_new/top_words_16_17_global.csv", sep=";")
+top_words_17_18_global <- read.csv("~/Desktop/Thèse/Media/Wordclouds_new/top_words_17_18_global.csv", sep=";")
+top_words_18_19_global <- read.csv("~/Desktop/Thèse/Media/Wordclouds_new/top_words_18_19_global.csv", sep=";")
+top_words_19_global <- read.csv("~/Desktop/Thèse/Media/Wordclouds_new/top_words_19_global.csv", sep=";")
+top_words_13_19_gauche <- read.csv("~/Desktop/Thèse/Media/Gauche_droite/Gauche/national_france_gauche_topterms.csv", sep=";")
+top_words_13_19_droite <- read.csv("~/Desktop/Thèse/Media/Gauche_droite/Droite/national_france_droite_topterms.csv", sep=",")
+top_words_13_19_france_national <- read.csv("~/Desktop/Thèse/Media/topwords_france_national.csv")
+top_words_13_19_france_regional <- read.csv("~/Desktop/Thèse/Media/topwords_france_regional.csv")                                           
+  
+```
+
+# Word cloud: France - national
+
+## 2013 - 2014
+
+```{r wordclouds 2013 - 2014}
+wordcloud(words = top_words_13_14_global$term, freq = top_words_13_14_global$count, min.freq = 5,
+          max.words=2000, random.order=FALSE, rot.per=0.35, scale=c(3, 0.5),
+          colors=brewer.pal(8, "Dark2"))
+```
+
+## 2014 - 2015
+
+```{r wordclouds 2014 - 2015}
+wordcloud1415 <- wordcloud(words = top_words_14_15_global$term, freq = top_words_14_15_global$count, min.freq = 5,
+          max.words=2000, random.order=FALSE, rot.per=0.35, scale=c(3, 0.5),
+          colors=brewer.pal(8, "Dark2"))
+```
+
+## 2015 - 2016
+
+```{r wordclouds 2015 - 2016}
+wordcloud1516 <- wordcloud(words = top_words_15_16_global$term, freq = top_words_15_16_global$count, min.freq = 5,
+          max.words=2000, random.order=FALSE, rot.per=0.35, scale=c(3, 0.5),
+          colors=brewer.pal(8, "Dark2"))
+```
+
+## 2016 - 2017
+
+```{r wordclouds 2016 - 2017}
+wordcloud1617 <- wordcloud(words = top_words_16_17_global$term, freq = top_words_16_17_global$count, min.freq = 5,
+          max.words=2000, random.order=FALSE, rot.per=0.35, scale=c(3, 0.5),
+          colors=brewer.pal(8, "Dark2"))
+```
+
+## 2017 -2018
+
+```{r wordclouds 2017 - 2018}
+wordcloud1718 <- wordcloud(words = top_words_17_18_global$term, freq = top_words_17_18_global$count, min.freq = 5,
+          max.words=2000, random.order=FALSE, rot.per=0.35, scale=c(3, 0.5),
+          colors=brewer.pal(8, "Dark2"))
+```
+
+## 2018 -2019
+
+```{r wordclouds 2018 - 2019}
+wordcloud1819 <- wordcloud(words = top_words_18_19_global$term, freq = top_words_18_19_global$count, min.freq = 5,
+          max.words=2000, random.order=FALSE, rot.per=0.35, scale=c(3, 0.5),
+          colors=brewer.pal(8, "Dark2"))
+```
+
+## 2019
+
+```{r wordclouds 2019}
+wordcloud19 <- wordcloud(words = top_words_19_global$term, freq = top_words_19_global$count, min.freq = 5,
+          max.words=2000, random.order=FALSE, rot.per=0.35, scale=c(3, 0.5),
+          colors=brewer.pal(8, "Dark2"))
+```
+
+
+# Word cloud: France – national
+
+```{r wordclouds national 2013 - 2019}
+wordcloudFrNational <- wordcloud(words = top_words_13_19_france_national$term, freq = top_words_13_19_france_national$count, min.freq = 5, 
+          max.words=2000, random.order=FALSE, rot.per=0.35, scale=c(3, 0.5),
+          colors=brewer.pal(8, "Dark2"))
+```
+
+# Word cloud: France – régional
+
+```{r wordclouds regional 2013 - 2019}
+wordcloudFrRegionall <- wordcloud(words = top_words_13_19_france_regional$term, freq = top_words_13_19_france_regional$count, min.freq = 5, 
+          max.words=2000, random.order=FALSE, rot.per=0.35, scale=c(3, 0.5),
+          colors=brewer.pal(8, "Dark2"))
+```
+
+# Comparaison régional national
+
+```{r comparaison régional national 2013 - 2019}
+# On calcule le compte total pour chaque corpus
+total_count_national = sum(DF_national$freq_national)
+total_count_regional = sum(DF_regional$freq_regional)
+
+# On fusionne DF_national et DF_regional
+DF_corpus <- full_join(DF_national, DF_regional, by = "word")
+
+# On remplace les NA values par des 0s 
+DF_corpus[is.na(DF_corpus)] <- 0
+
+# Calcul des valeurs observées et attendues 
+DF_corpus$expected_national = (DF_corpus$freq_national + DF_corpus$freq_regional) * (total_count_national/ (total_count_national + total_count_regional))
+DF_corpus$expected_regional = (DF_corpus$freq_national + DF_corpus$freq_regional) * (total_count_regional / (total_count_national + total_count_regional))
+DF_corpus$observed_national = DF_corpus$freq_national
+DF_corpus$observed_regional = DF_corpus$freq_regional
+
+# Fonction maison pour la log vraisemblance
+log_likelihood <- function(O1, O2, E1, E2) {
+  LL <- 2 * (O1 * log(O1 / E1) + O2 * log(O2 / E2))
+  return(LL)
+}
+
+# Application de la fanction à chaque ligne
+DF_corpus$log_likelihood <- mapply(log_likelihood, DF_corpus$observed_national, DF_corpus$observed_regional, DF_corpus$expected_national, DF_corpus$expected_regional)
+
+# Tri par log_likelihood
+DF_corpus = DF_corpus[order(-DF_corpus$log_likelihood), ]
+
+# print the result
+head(DF_corpus)
+
+#visualisation
+
+# Define the 'corpus' variable for color coding
+DF_corpus$corpus <- ifelse(DF_corpus$freq_national > DF_corpus$freq_regional, "National", "Regional")
+
+# Select the top n words with highest absolute log likelihood scores
+n <- 30
+DF_plot <- DF_corpus[order(abs(DF_corpus$log_likelihood), decreasing = TRUE), ][1:n, ]
+
+# Make the plot
+ggplot(DF_plot, aes(x = reorder(word, log_likelihood), y = log_likelihood, fill = corpus)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  labs(x = "Mot", y = "Log-vraisemblance", fill = "Plus fréquent dans la:",
+       title = "Mots avec la plus grande différence d'usage") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "Set2",
+                    labels = c("Presse nationale", "Presse régionale"))
+
+```
+
+# Word cloud: France – droite 
+
+## 2013 - 2019
+
+```{r wordclouds droite 2013 - 2019}
+wordcloudDroite <- wordcloud(words = top_words_13_19_droite$term, freq = top_words_13_19_droite$count, min.freq = 5, 
+          max.words=2000, random.order=FALSE, rot.per=0.35, scale=c(3, 0.5),
+          colors=brewer.pal(8, "Dark2"))
+```
+
+# Comparaison droite gauche
+
+```{r comparaison gauche droite 2013 - 2019}
+library(tidyverse)
+
+# Fusion des tables
+merged <- full_join(top_words_13_19_gauche, top_words_13_19_droite, by = "term", suffix = c("_gauche", "_droite"))
+
+# Remplacer les valeurs NA par des zéros (mots qui apparaissent dans un jeu de données mais pas dans l'autre)
+merged[is.na(merged)] <- 0
+
+# Comparaison gauche droite 2013 - 2019 - table
+GD_corpus1 = data.frame(top_words_13_19_gauche$term, top_words_13_19_gauche$count)
+GD_corpus2 = data.frame(top_words_13_19_droite$term, top_words_13_19_droite$count)
+
+colnames(GD_corpus1) = c('word', 'freq_corpus1')
+colnames(GD_corpus2) = c('word', 'freq_corpus2')
+
+# Calculer le nombre total pour chaque corpus
+total_count_corpus1 = sum(GD_corpus1$freq_corpus1)
+total_count_corpus2 = sum(GD_corpus2$freq_corpus2)
+
+# Fusionner les deux dataframes
+GD_corpus = merge(GD_corpus1, GD_corpus2, by = "word")
+
+# Calculer les fréquences attendues et observées pour chaque mot
+GD_corpus$expected_corpus1 = (GD_corpus$freq_corpus1 + GD_corpus$freq_corpus2) * (total_count_corpus1 / (total_count_corpus1 + total_count_corpus2))
+GD_corpus$expected_corpus2 = (GD_corpus$freq_corpus1 + GD_corpus$freq_corpus2) * (total_count_corpus2 / (total_count_corpus1 + total_count_corpus2))
+GD_corpus$observed_corpus1 = GD_corpus$freq_corpus1
+GD_corpus$observed_corpus2 = GD_corpus$freq_corpus2
+
+# Fonction personnalisée pour le calcul de la vraisemblance logarithmique
+log_likelihood <- function(O1, O2, E1, E2) {
+  LL <- 2 * (O1 * log(O1 / E1) + O2 * log(O2 / E2))
+  return(LL)
+}
+
+# Appliquer la fonction à chaque ligne
+GD_corpus$log_likelihood <- mapply(log_likelihood, GD_corpus$observed_corpus1, GD_corpus$observed_corpus2, GD_corpus$expected_corpus1, GD_corpus$expected_corpus2)
+
+# Trier par log_likelihood
+GD_corpus = GD_corpus[order(-GD_corpus$log_likelihood), ]
+
+# Afficher le résultat
+head(GD_corpus)
+
+# Comparaison gauche droite 2013 - 2019 - visualisation
+library(ggplot2)
+GD_corpus$corpus <- ifelse(GD_corpus$freq_corpus1 > GD_corpus$freq_corpus2, "Corpus 1", "Corpus 2")
+
+# Sélectionner les n mots avec les scores de vraisemblance logarithmique absolus les plus élevés
+n <- 30
+GD_plot <- GD_corpus[order(abs(GD_corpus$log_likelihood), decreasing = TRUE), ][1:n, ]
+
+# Créer le graphique
+ggplot(GD_plot, aes(x = reorder(word, log_likelihood), y = log_likelihood, fill = corpus)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  labs(x = "Mot", y = "Score de vraisemblance logarithmique", fill = "Plus fréquent dans la:",
+       title = "Mots avec la plus grande différence d'usage")
+
+```
+
+# Statistiques et spécificités
+
+## Restructuration pour introduire la dimension temporelle
+
+On ajoute une colonne 'year' à chaque data frame.
+
+```{r adding year and merging}
+top_words_13_14_global$year <- "2013-2014"
+top_words_14_15_global$year <- "2014-2015"
+top_words_15_16_global$year <- "2015-2016"
+top_words_16_17_global$year <- "2016-2017"
+top_words_17_18_global$year <- "2017-2018"
+top_words_18_19_global$year <- "2018-2019"
+top_words_19_global$year <- "2019"
+top_words_by_year <- rbind(top_words_13_14_global, top_words_14_15_global, top_words_15_16_global, 
+            top_words_16_17_global, top_words_17_18_global, top_words_18_19_global, 
+            top_words_19_global)
+top_words_by_year
+```
+
+## Stats descs et z-score par année
+
+On filtre les termes n'apparaissant qu'une seule année:
+
+```{r filtre}
+counts <- aggregate(count ~ term, data = top_words_by_year, FUN = length)
+top_words_by_year <- top_words_by_year[top_words_by_year$term %in% counts$term[counts$count > 1], ]
+```
+
+On calcule moyennes et écart-types:
+
+```{r moyenne et écart type}
+means <- aggregate(count ~ term, data = top_words_by_year, FUN = mean)
+names(means)[names(means) == "count"] <- "mean"
+std_devs <- aggregate(count ~ term, data = top_words_by_year, FUN = sd)
+names(std_devs)[names(std_devs) == "count"] <- "sd"
+top_words_by_year
+```
+
+On rajoute ces valeurs à la base de donnée globale:
+
+```{r fusionner}
+top_words_by_year <- merge(top_words_by_year, means, by = "term")
+top_words_by_year <- merge(top_words_by_year, std_devs, by = "term")
+top_words_by_year
+```
+
+On calcule les z-score, en excluant les cas où l'écart-type est nul.
+
+```{r z-score }
+top_words_by_year <- top_words_by_year %>%
+  group_by(term) %>%
+  mutate(mean = mean(count), 
+         sd = sd(count)) %>%
+  filter(sd != 0) %>%
+  ungroup() %>%
+  mutate(z_score = (count - mean) / sd)
+top_words_by_year
+```
+
+# Get the top 10 words with highest and lowest z-scores
+
+```{r top high z-score }
+library(dplyr)
+top_30_positive <- top_words_by_year %>% arrange(desc(z_score)) %>% head(30)
+top_30_negative <- top_words_by_year %>% arrange(z_score) %>% head(30)
+print(top_30_positive)
+print(top_30_negative)
+write.csv(top_30_positive, "top_30_positive_z_scores.csv", row.names = FALSE)
+write.csv(top_30_negative, "top_30_negative_z_scores.csv", row.names = FALSE)
+```
+
+
+## Heatmap
+
+### Liste de mots sélectionnés: maladies, vaccins, adjuvants, laboratoire
+
+gardasil, sanofi, gsk,
+
+```{r sélection des termes }
+selected_terms <- c("gardasil", "utérus", "grippe", "hpv", "papillomavirus", "grippe", "h1n1", "tuberculose", "aluminium", "autisme", "polio", "sanofi", "gsk" )
+```
+
+On filtre ensuite pour ne garder que ces termes
+
+```{r sélection des termes: filtrage}
+df_selected <- top_words_by_year %>% 
+  filter(term %in% selected_terms)
+```
+
+# Create a matrix for the heatmap
+```{r heatmap}
+library(pheatmap)
+heatmap_matrix <- df_selected %>%
+  spread(key = year, value = count)  # Convert the data to wide format
+heatmap_matrix <- as.matrix(heatmap_matrix[,-1])  # Convert the data frame to a matrix
+print(heatmap_matrix)
+```
+
+# Create the heatmap
+```{r heatmap: création}
+pheatmap::pheatmap(heatmap_matrix)
+```
+
+# Série temporelle : Presse nationale et presse locale
+
+Graphiques pour séries temporelles de la presse nationale et de la presse locale française:
+
+## En valeurs absolues
+
+```{r time series}
+library(tidyverse)
+library(lubridate)
+library(ggplot2)
+data <- read.csv("~/Desktop/Thèse/Media/total_france_national_decompte.csv")
+data2 <- read.csv("~/Desktop/Thèse/Media/total_france_local_decompte.csv")
+data$date <- as.Date(data$date)
+data <- data %>%
+  mutate(year_month = floor_date(date, "month"))
+data_monthly <- data %>%
+  group_by(year_month) %>%
+  summarize(
+    count = sum(count),
+    total_count = sum(total_count),
+    ratio = mean(ratio)
+  )
+
+# Convert "date" column to a date type:
+data2$date <- as.Date(data2$date)
+# Add a new column for the month and year:
+data2 <- data2 %>%
+  mutate(year_month = floor_date(date, "month"))
+# Group by this new column and summarize:
+data2_monthly <- data2 %>%
+  group_by(year_month) %>%
+  summarize(
+    count = sum(count),
+    total_count = sum(total_count),
+    ratio = mean(ratio)
+  )
+# Add a source column to each data frame:
+data_monthly$source <- "data1"
+data2_monthly$source <- "data2"
+
+# Combine both data frames:
+combined_data <- rbind(data_monthly, data2_monthly)
+
+
+# Plot the data:
+ggplot(combined_data, aes(x = year_month, y = count, color = source)) +
+  geom_line() +
+  theme_minimal() +
+  scale_x_date(date_minor_breaks = "1 month", 
+               date_breaks = "1 year", 
+               date_labels = "%Y") +
+  xlab("Année") +
+  ylab("Nombre d'articles") +
+  ggtitle("Nombres d'articles par mois - thème: vaccination") +
+  scale_color_discrete(labels = c("Presse nationale", "Presse régionale")) +
+  theme(
+    panel.grid.major = element_line(color = "grey", linetype = "solid", size = 0.5), 
+    panel.grid.minor = element_line(color = "grey", linetype = "dotted", size = 0.5)
+  )
+```
+
+## En pourcentage de la production collectée
+
+```{r time series - ratio}
+ggplot(combined_data, aes(x = year_month, y = ratio, color = source)) +
+  geom_line() +
+  theme_minimal() +
+  scale_x_date(date_minor_breaks = "1 month", 
+               date_breaks = "1 year", 
+               date_labels = "%Y") +
+  xlab("Année") +
+  ylab("Part des publications évoquant la vaccination") +
+  ggtitle("Proportion d'articles par mois consacrés au thème de la vaccination") +
+  scale_color_discrete(labels = c("Presse nationale", "Presse régionale")) +
+  theme(
+    panel.grid.major = element_line(color = "grey", linetype = "solid", size = 0.5), 
+    panel.grid.minor = element_line(color = "grey", linetype = "dotted", size = 0.5)
+  )
+```
+
+## Corrélations
+
+```{r corrélation}
+combined_data <- full_join(
+  data_monthly %>% select(year_month, ratio) %>% rename(ratio1 = ratio),
+  data2_monthly %>% select(year_month, ratio) %>% rename(ratio2 = ratio),
+  by = "year_month"
+)
+cor(combined_data$ratio1, combined_data$ratio2, use = "complete.obs")
+```
+
+```{r corrélation roulante}
+library(zoo)
+# Create zoo objects for the rolling correlation:
+z1 <- zoo(combined_data$ratio1)
+z2 <- zoo(combined_data$ratio2)
+
+# Calculate the rolling correlation:
+rolling_cor <- rollapply(
+  cbind(z1, z2), 
+  width = 9,    # 9-month moving window
+  FUN = function(x) cor(x[,1], x[,2], use = "complete.obs"), 
+  by.column = FALSE, 
+  align = "right",
+  fill = NA
+)
+# Add the rolling correlation to the data frame:
+combined_data$rolling_cor <- as.vector(rolling_cor)
+
+# Plot the rolling correlation:
+ggplot(combined_data, aes(x = year_month, y = rolling_cor)) +
+  geom_line() +
+  geom_smooth(method = "loess", se = FALSE, color = "red", linetype = "dashed") +
+  theme_minimal() +
+  scale_x_date(date_minor_breaks = "1 month", 
+               date_breaks = "1 year", 
+               date_labels = "%Y") +
+  xlab("Année") +
+  ylab("Corrélation roulante") +
+  ggtitle("Corrélation roulante (9 mois) entre nombre d'articles presse régionale et locale") +
+  theme(
+    panel.grid.major = element_line(color = "grey", linetype = "solid", size = 0.5), 
+    panel.grid.minor = element_line(color = "grey", linetype = "dotted", size = 0.5)
+  )
+```
+
+# Série temporelle : Presse de gauche et presse de droite
+
+
+Graphiques pour séries temporelles de la presse de gauche et de la presse de droite françaises:
+
+## En valeurs absolues
+
+```{r time series}
+library(tidyverse)
+library(lubridate)
+library(ggplot2)
+pressedegauche <- read.csv("~/Desktop/Thèse/Media/Gauche_droite/Gauche/national_france_gauche_decompte.csv")
+pressededroite <- read.csv("~/Desktop/Thèse/Media/Gauche_droite/Droite/national_france_droite_decompte.csv")
+pressedegauche$date <- as.Date(pressedegauche$date)
+pressedegauche <- pressedegauche %>%
+  mutate(year_month = floor_date(date, "month"))
+pressedegauche_monthly <- pressedegauche %>%
+  group_by(year_month) %>%
+  summarize(
+    count = sum(count),
+    total_count = sum(total_count),
+    ratio = mean(ratio)
+  )
+
+# Convert "date" column to a date type:
+pressededroite$date <- as.Date(pressededroite$date)
+# Add a new column for the month and year:
+pressededroite <- pressededroite %>%
+  mutate(year_month = floor_date(date, "month"))
+# Group by this new column and summarize:
+pressededroite_monthly <- pressededroite %>%
+  group_by(year_month) %>%
+  summarize(
+    count = sum(count),
+    total_count = sum(total_count),
+    ratio = mean(ratio)
+  )
+# Add a source column to each pressedegauche frame:
+pressedegauche_monthly$source <- "data1"
+pressededroite_monthly$source <- "pressededroite"
+
+# Combine both pressedegauche frames:
+combined_pressedegauche <- rbind(pressedegauche_monthly, pressededroite_monthly)
+
+
+# Plot the pressedegauche:
+ggplot(combined_pressedegauche, aes(x = year_month, y = count, color = source)) +
+  geom_line() +
+  theme_minimal() +
+  scale_x_date(date_minor_breaks = "1 month", 
+               date_breaks = "1 year", 
+               date_labels = "%Y") +
+  xlab("Année") +
+  ylab("Nombre d'articles") +
+  ggtitle("Nombres d'articles par mois - thème: vaccination") +
+  scale_color_discrete(labels = c("Presse de gauche", "Presse de droite")) +
+  theme(
+    panel.grid.major = element_line(color = "grey", linetype = "solid", size = 0.5), 
+    panel.grid.minor = element_line(color = "grey", linetype = "dotted", size = 0.5)
+  )
+```
+
+## En pourcentage de la production collectée
+
+```{r time series - ratio}
+ggplot(combined_pressedegauche, aes(x = year_month, y = ratio, color = source)) +
+  geom_line() +
+  theme_minimal() +
+  scale_x_date(date_minor_breaks = "1 month", 
+               date_breaks = "1 year", 
+               date_labels = "%Y") +
+  xlab("Année") +
+  ylab("Part des publications évoquant la vaccination") +
+  ggtitle("Proportion d'articles par mois consacrés au thème de la vaccination") +
+  scale_color_discrete(labels = c("Presse de gauche", "Presse de droite")) +
+  theme(
+    panel.grid.major = element_line(color = "grey", linetype = "solid", size = 0.5), 
+    panel.grid.minor = element_line(color = "grey", linetype = "dotted", size = 0.5)
+  )
+```
+
+## Corrélations
+
+```{r corrélation}
+combined_pressedegauche <- full_join(
+  pressedegauche_monthly %>% select(year_month, ratio) %>% rename(ratio1 = ratio),
+  pressededroite_monthly %>% select(year_month, ratio) %>% rename(ratio2 = ratio),
+  by = "year_month"
+)
+cor(combined_pressedegauche$ratio1, combined_pressedegauche$ratio2, use = "complete.obs")
+```
+
+```{r corrélation roulante}
+library(zoo)
+# Create zoo objects for the rolling correlation:
+zgauche <- zoo(combined_pressedegauche$ratio1)
+zdroite <- zoo(combined_pressedegauche$ratio2)
+
+#statistiques élémentaires sur ces élements
+mean(zgauche)
+mean(zdroite)
+sd(zgauche)
+sd(zdroite)
+
+# Calculate the rolling correlation:
+rolling_cor <- rollapply(
+  cbind(zgauche, zdroite), 
+  width = 9,    # 9-month moving window
+  FUN = function(x) cor(x[,1], x[,2], use = "complete.obs"), 
+  by.column = FALSE, 
+  align = "right",
+  fill = NA
+)
+# Add the rolling correlation to the pressedegauche frame:
+combined_pressedegauche$rolling_cor <- as.vector(rolling_cor)
+
+# Plot the rolling correlation:
+ggplot(combined_pressedegauche, aes(x = year_month, y = rolling_cor)) +
+  geom_line() +
+  geom_smooth(method = "loess", se = FALSE, color = "red", linetype = "dashed") +
+  theme_minimal() +
+  scale_x_date(date_minor_breaks = "1 month", 
+               date_breaks = "1 year", 
+               date_labels = "%Y") +
+  xlab("Année") +
+  ylab("Corrélation roulante") +
+  ggtitle("Corrélation roulante (9 mois) entre nombre d'articles presse de gauche et de droite") +
+  theme(
+    panel.grid.major = element_line(color = "grey", linetype = "solid", size = 0.5), 
+    panel.grid.minor = element_line(color = "grey", linetype = "dotted", size = 0.5)
+  )
+```
+
+
+
+
+
